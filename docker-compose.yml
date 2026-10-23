@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: NewPass123
+      MYSQL_DATABASE: food_delivery
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ppassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://root:NewPass123@db:3306/food_delivery
+      JWT_SECRET_KEY: change-me-in-docker
+      TZ_OFFSET_MINUTES: "330"
+    ports:
+      - "8000:8000"
+
+volumes:
+  dbdata:
